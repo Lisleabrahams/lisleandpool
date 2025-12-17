@@ -496,7 +496,8 @@ export default function Portfolio({ introText, projects, duckModelUrl }) {
 
 I challenged myself to concept and build this portfolio in 48 hours — just for you at Random Access Memories Co. I'm here for the Content Lead role, or any creative lead space that needs filling. I've spent years shaping digital and brand stories at Highsnobiety, but what excites me most is building at the frontier of human-AI collaboration.
 
-Honestly, I'm at a moment in my life where I'm looking for something genuine — a place that excites me, where I wake up wanting to work. Pool feels like that. I'd love to help define the voice, the universe, and the story of what you're building.
+Honestly, I'm at a moment in my life where I'm looking for something genuine — a place that excites me, where I wake up wanting to work.
+Pool feels like that. I'd love to help define the voice, the universe, and the story of what you're building.
 
 Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
 
@@ -834,7 +835,10 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
       {/* Clear My Ducks Button - Desktop Only */}
       {!isMobile && ducks.length > 0 && (
         <button
-          onClick={() => setDucks([])}
+          onClick={() => {
+            // Trigger clearing animation - DuckCanvas will handle the actual removal
+            window.dispatchEvent(new CustomEvent('clearDucks'))
+          }}
           style={{
             position: 'fixed',
             top: '20px',
@@ -941,7 +945,10 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                 </button>
                 {ducks.length > 0 && (
                   <button
-                    onClick={() => setDucks([])}
+                    onClick={() => {
+                      // Trigger clearing animation - DuckCanvas will handle the actual removal
+                      window.dispatchEvent(new CustomEvent('clearDucks'))
+                    }}
                     style={{
                       background: 'none',
                       border: 'none',

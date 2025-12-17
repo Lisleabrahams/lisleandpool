@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
 // Single duck component with its own physics
-function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
+function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId, isClearing }) {
   const meshRef = useRef()
   const { viewport, size } = useThree()
   
@@ -18,6 +18,8 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
     angularVel: [(Math.random() - 0.5) * 0.05, 0, (Math.random() - 0.5) * 0.05]
   })
 
+  const hasAppliedClearForce = useRef(false)
+
   // Register this duck's physics ref
   useEffect(() => {
     allDucksRef.current[id] = physics
@@ -25,6 +27,13 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
       delete allDucksRef.current[id]
     }
   }, [id, allDucksRef])
+
+  // Reset clear force ref when clearing ends
+  useEffect(() => {
+    if (!isClearing) {
+      hasAppliedClearForce.current = false
+    }
+  }, [isClearing])
 
   const gravity = -0.008
   const damping = 0.98
@@ -39,7 +48,16 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
     const p = physics.current
     const isDragging = draggingId === id
 
-    if (!isDragging) {
+    // If clearing, apply strong upward force to fly away (only once)
+    if (isClearing && !hasAppliedClearForce.current) {
+      hasAppliedClearForce.current = true
+      p.velocity[1] = 0.5 + Math.random() * 0.3  // Strong upward burst
+      p.velocity[0] = (Math.random() - 0.5) * 0.4  // Random horizontal scatter
+      p.angularVel[0] = (Math.random() - 0.5) * 0.5
+      p.angularVel[2] = (Math.random() - 0.5) * 0.5
+    }
+
+    if (!isDragging && !isClearing) {
       // Apply gravity
       p.velocity[1] += gravity
 
@@ -56,14 +74,6 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
         p.angularVel[0] *= 0.9
         p.angularVel[2] *= 0.9
       }
-
-      // Update position
-      p.position[0] += p.velocity[0]
-      p.position[1] += p.velocity[1]
-
-      // Update rotation
-      p.rotation[0] += p.angularVel[0]
-      p.rotation[2] += p.angularVel[2]
 
       // Clamp angular velocity to prevent crazy spinning
       p.angularVel[0] = Math.max(-maxAngularVel, Math.min(maxAngularVel, p.angularVel[0]))
@@ -139,6 +149,14 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId }) {
       })
     }
 
+    // Always update position and rotation (even when clearing)
+    if (isClearing || !isDragging) {
+      p.position[0] += p.velocity[0]
+      p.position[1] += p.velocity[1]
+      p.rotation[0] += p.angularVel[0]
+      p.rotation[2] += p.angularVel[2]
+    }
+
     // Apply to mesh
     meshRef.current.position.set(p.position[0], p.position[1], p.position[2])
     meshRef.current.rotation.set(p.rotation[0], p.rotation[1], p.rotation[2])
@@ -197,9 +215,10 @@ function DuckModel({ modelUrl }) {
   return <primitive object={clonedScene} scale={0.5} />
 }
 
-export default function DuckCanvas({ ducks, modelUrl }) {
+export default function DuckCanvas({ ducks, onClose, modelUrl }) {
   const [mounted, setMounted] = useState(false)
   const [draggingId, setDraggingId] = useState(null)
+  const [isClearing, setIsClearing] = useState(false)
   const allDucksRef = useRef({})
   const dragRef = useRef({ physics: null, screenToWorld: null, prevMouse: [0, 0], velTracker: [0, 0] })
   
@@ -208,7 +227,28 @@ export default function DuckCanvas({ ducks, modelUrl }) {
     if (modelUrl) {
       useGLTF.preload(modelUrl)
     }
-  }, [modelUrl])
+    
+    // Listen for clear event from parent
+    const handleClearEvent = () => {
+      if (ducks.length > 0) {
+        setIsClearing(true)
+        setTimeout(() => {
+          onClose()
+          setIsClearing(false)
+        }, 1000)
+      }
+    }
+    
+    window.addEventListener('clearDucks', handleClearEvent)
+    return () => window.removeEventListener('clearDucks', handleClearEvent)
+  }, [modelUrl, ducks.length, onClose])
+
+  // Handle clear animation
+  useEffect(() => {
+    if (ducks.length === 0) {
+      setIsClearing(false)
+    }
+  }, [ducks.length])
 
   const handleDragStart = (id, physicsRef, screenToWorld) => {
     setDraggingId(id)
@@ -272,7 +312,7 @@ export default function DuckCanvas({ ducks, modelUrl }) {
     })
   }, [ducks.length])
 
-  if (!mounted || !ducks || ducks.length === 0) return null
+  if (!mounted || (!ducks || ducks.length === 0) && !isClearing) return null
 
   return (
     <div 
@@ -303,9 +343,32 @@ export default function DuckCanvas({ ducks, modelUrl }) {
             allDucksRef={allDucksRef}
             onDragStart={handleDragStart}
             draggingId={draggingId}
+            isClearing={isClearing}
           />
         ))}
       </Canvas>
+
+      {/* Clear button */}
+      {ducks.length > 0 && !isClearing && (
+        <button
+          onClick={handleClear}
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            padding: '10px 20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: '"Geist Mono", monospace',
+            fontSize: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
+          Clear Ducks
+        </button>
+      )}
     </div>
   )
 }
