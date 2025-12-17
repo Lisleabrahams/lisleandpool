@@ -496,9 +496,7 @@ export default function Portfolio({ introText, projects, duckModelUrl }) {
 
 I challenged myself to concept and build this portfolio in 48 hours — just for you at Random Access Memories Co. I'm here for the Content Lead role, or any creative lead space that needs filling. I've spent years shaping digital and brand stories at Highsnobiety, but what excites me most is building at the frontier of human-AI collaboration.
 
-Honestly, I'm at a moment in my life where I'm looking for something genuine — a place that excites me, where I wake up wanting to work.
-
-Pool feels like that. I'd love to help define the voice, the universe, and the story of what you're building.
+Honestly, I'm at a moment in my life where I'm looking for something genuine — a place that excites me, where I wake up wanting to work. Pool feels like that. I'd love to help define the voice, the universe, and the story of what you're building.
 
 Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
 
@@ -547,23 +545,26 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
 
   // Viewport-based description changes
   useEffect(() => {
-    if (!expandedProject) return
+    if (!expandedProject || !projects) return
 
     const observers = []
+    const currentProjectId = expandedProject
 
     mediaRefs.current.forEach((ref, index) => {
       if (!ref) return
 
       const observer = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) {
-            const currentProject = projects?.find(p => p._id === expandedProject)
+          // Only update if we're still on the same project
+          if (entry.isIntersecting && currentProjectId === expandedProject) {
+            const currentProject = projects?.find(p => p._id === currentProjectId)
             const mediaItem = currentProject?.media?.[index]
             
-            console.log('Media entered viewport:', index, 'description:', mediaItem?.description)
+            console.log('Media entered viewport:', index, 'Project:', currentProject?.title, 'Media description:', mediaItem?.description)
             
             // Use this specific media's description from Sanity
             if (mediaItem?.description) {
+              console.log('Setting description from media item')
               setCurrentDescription(mediaItem.description)
               setIsTyping(true)
             }
@@ -577,15 +578,25 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
     })
 
     return () => {
+      console.log('Cleaning up viewport observers')
       observers.forEach(obs => obs.disconnect())
     }
   }, [expandedProject, projects])
 
   // Initialize with real project description from Sanity
   useEffect(() => {
-    if (expandedProject) {
+    if (expandedProject && projects) {
+      // Clear media refs when switching projects
+      mediaRefs.current = []
+      
       const currentProject = projects?.find(p => p._id === expandedProject)
+      console.log('=== PROJECT LOADED ===')
+      console.log('Project title:', currentProject?.title)
+      console.log('Project description:', currentProject?.description)
+      console.log('Full project object:', currentProject)
+      console.log('All projects:', projects)
       setCurrentDescription(currentProject?.description || '')
+      setIsTyping(true)
     }
   }, [expandedProject, projects])
 
@@ -779,14 +790,17 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                 transform: showElements ? 'scale(1)' : 'scale(0.95)',
                 transition: 'opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s'
               }}>
-                {expandedProject && projects?.find(p => p._id === expandedProject) && (
-                  <div>
-                    {currentDescription || 
-                     projects.find(p => p._id === expandedProject)?.description ||
-                     ''}
-                    {isTyping && <span style={{ animation: 'blink 0.8s infinite' }}>▊</span>}
-                  </div>
-                )}
+                {expandedProject && projects?.find(p => p._id === expandedProject) && (() => {
+                  const project = projects.find(p => p._id === expandedProject)
+                  const displayText = currentDescription || project?.description || ''
+                  console.log('DISPLAYING:', { currentDescription, projectDescription: project?.description, displayText })
+                  return (
+                    <div>
+                      {displayText}
+                      {isTyping && <span style={{ animation: 'blink 0.8s infinite' }}>▊</span>}
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}

@@ -4,7 +4,11 @@ import Portfolio from '@/components/Portfolio'
 async function getData() {
   const homepage = await client.fetch(`*[_type == "homepage"][0]`)
   const projects = await client.fetch(`*[_type == "project"] | order(order asc) {
-    ...,
+    _id,
+    title,
+    slug,
+    order,
+    description,
     media[] {
       ...,
       _type,
@@ -38,6 +42,9 @@ async function getData() {
     },
     descriptions[]
   }`)
+  
+  console.log('=== FETCHED FROM SANITY ===')
+  console.log('Projects:', projects?.map((p: any) => ({ title: p.title, description: p.description })))
   
   return { homepage, projects }
 }
