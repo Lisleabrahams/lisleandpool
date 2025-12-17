@@ -728,7 +728,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               gap: '40px'
             }}>
               {/* Project Names */}
-              <div style={{ 
+              <div style={{
                 flex: '0 0 auto',
                 minWidth: '200px',
                 opacity: showElements ? 1 : 0,
@@ -741,6 +741,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                     onClick={() => {
                       if (project._id === expandedProject) return
                       
+                      setCurrentDescription('')  // Clear description immediately
                       setTransitionPhase('blurOut')
                       setIsTransitioning(true)
                       setTimeout(() => {
@@ -980,6 +981,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                     onClick={() => {
                       if (project._id === expandedProject) return
                       
+                      setCurrentDescription('')  // Clear description immediately
                       setTransitionPhase('blurOut')
                       setIsTransitioning(true)
                       setTimeout(() => {
@@ -1253,6 +1255,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                 <button
                   onClick={() => {
                     if (nextProject._id === expandedProject) return
+                    setCurrentDescription('')  // Clear description immediately
                     setTransitionPhase('blurOut')
                     setIsTransitioning(true)
                     setTimeout(() => {
