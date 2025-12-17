@@ -639,6 +639,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
   // Reset blurs when project changes
   useEffect(() => {
     setImageBlurs({})
+    mediaRefs.current = []  // Reset media refs when project changes
   }, [expandedProject])
 
   // Detect color triggers on scroll
@@ -1030,7 +1031,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               
               return (
                 <div
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   ref={(el) => {
                     if (el) {
                       mediaRefs.current[imgNum] = el
@@ -1058,7 +1059,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               }
               return (
                 <div 
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   style={{
                     height: heights[media.size] || '60px',
                     width: '100%'
@@ -1071,7 +1072,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
             if (media._type === 'horizontalImage') {
               return (
                 <div
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                   style={{
                     marginBottom: isMobile ? '16px' : '30px',
@@ -1091,7 +1092,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
             if (media._type === 'parallaxModule') {
               return (
                 <div
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                   style={{
                     marginBottom: isMobile ? '16px' : '30px',
@@ -1115,7 +1116,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
             if (media._type === 'splitScreenModule') {
               return (
                 <div
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                   style={{
                     marginBottom: isMobile ? '16px' : '30px',
@@ -1142,7 +1143,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               if (media.videoDisplayType === 'fullWidth') {
                 return (
                   <FullWidthVideo
-                    key={imgNum}
+                    key={`${expandedProject}-${imgNum}`}
                     src={media.asset.url}
                     alt={media.alt || ''}
                     desktopWidth={media.desktopWidth || '100'}
@@ -1154,7 +1155,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               if (isMobile && media.mobileFullHeight === true) {
                 return (
                   <div 
-                    key={imgNum}
+                    key={`${expandedProject}-${imgNum}`}
                     ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                     style={{
                       width: '100vw',
@@ -1183,7 +1184,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
               // Default: collapsed thumbnail with expand
               return (
                 <div 
-                  key={imgNum}
+                  key={`${expandedProject}-${imgNum}`}
                   ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                   style={{
                     width: '100vw',
@@ -1216,7 +1217,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
             
             return (
               <img
-                key={imgNum}
+                key={`${expandedProject}-${imgNum}`}
                 ref={(el) => { if (el) mediaRefs.current[imgNum] = el }}
                 src={isMobile && media.mobileImageUrl ? media.mobileImageUrl : media.asset.url}
                 alt={media.alt || `Project image ${imgNum + 1}`}
