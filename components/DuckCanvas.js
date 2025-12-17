@@ -48,13 +48,21 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId, isClearing }
     const p = physics.current
     const isDragging = draggingId === id
 
-    // If clearing, apply strong upward force to fly away (only once)
-    if (isClearing && !hasAppliedClearForce.current) {
-      hasAppliedClearForce.current = true
-      p.velocity[1] = 0.5 + Math.random() * 0.3  // Strong upward burst
-      p.velocity[0] = (Math.random() - 0.5) * 0.4  // Random horizontal scatter
-      p.angularVel[0] = (Math.random() - 0.5) * 0.5
-      p.angularVel[2] = (Math.random() - 0.5) * 0.5
+    // If clearing, apply acceleration over time (ease-in effect)
+    if (isClearing) {
+      // Set random direction once
+      if (!hasAppliedClearForce.current) {
+        hasAppliedClearForce.current = true
+        // Store random direction for this duck
+        p.clearDirectionX = (Math.random() - 0.5) * 0.02
+        p.clearDirectionY = 0.01 + Math.random() * 0.01
+      }
+      
+      // Apply acceleration each frame (ease-in effect)
+      p.velocity[0] += p.clearDirectionX
+      p.velocity[1] += p.clearDirectionY
+      p.angularVel[0] += (Math.random() - 0.5) * 0.02
+      p.angularVel[2] += (Math.random() - 0.5) * 0.02
     }
 
     if (!isDragging && !isClearing) {
@@ -311,6 +319,15 @@ export default function DuckCanvas({ ducks, onClose, modelUrl }) {
       }
     })
   }, [ducks.length])
+
+  const handleClear = () => {
+    if (ducks.length === 0) return
+    setIsClearing(true)
+    setTimeout(() => {
+      onClose()
+      setIsClearing(false)
+    }, 1000)
+  }
 
   if (!mounted || (!ducks || ducks.length === 0) && !isClearing) return null
 
