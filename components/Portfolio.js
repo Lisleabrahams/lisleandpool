@@ -783,7 +783,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
                   <div>
                     {currentDescription || 
                      projects.find(p => p._id === expandedProject)?.description ||
-                     'Lorem Ipsum is simply dummy text...'}
+                     ''}
                     {isTyping && <span style={{ animation: 'blink 0.8s infinite' }}>▊</span>}
                   </div>
                 )}
