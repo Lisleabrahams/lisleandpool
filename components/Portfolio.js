@@ -558,16 +558,18 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
         ([entry]) => {
           // Only update if we're still on the same project
           if (entry.isIntersecting && currentProjectId === expandedProject) {
-            const currentProject = projects?.find(p => p._id === currentProjectId)
-            const mediaItem = currentProject?.media?.[index]
+            const currentProject = projects?.find(p => p._id === expandedProject)
+            if (!currentProject) return  // Guard clause
             
-            console.log('Media entered viewport:', index, 'Project:', currentProject?.title, 'Media description:', mediaItem?.description)
+            const mediaItem = currentProject.media?.[index]
             
-            // Use this specific media's description from Sanity
+            // Only update if this media item has a description AND belongs to current project
             if (mediaItem?.description) {
-              console.log('Setting description from media item')
               setCurrentDescription(mediaItem.description)
               setIsTyping(true)
+            } else if (index === 0) {
+              // First item - show project description
+              setCurrentDescription(currentProject.description || '')
             }
           }
         },
@@ -579,7 +581,6 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
     })
 
     return () => {
-      console.log('Cleaning up viewport observers')
       observers.forEach(obs => obs.disconnect())
     }
   }, [expandedProject, projects])
@@ -587,17 +588,11 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
   // Initialize with real project description from Sanity
   useEffect(() => {
     if (expandedProject && projects) {
-      // Clear media refs when switching projects
-      mediaRefs.current = []
-      
-      const currentProject = projects?.find(p => p._id === expandedProject)
-      console.log('=== PROJECT LOADED ===')
-      console.log('Project title:', currentProject?.title)
-      console.log('Project description:', currentProject?.description)
-      console.log('Full project object:', currentProject)
-      console.log('All projects:', projects)
-      setCurrentDescription(currentProject?.description || '')
-      setIsTyping(true)
+      const currentProject = projects.find(p => p._id === expandedProject)
+      if (currentProject) {
+        setCurrentDescription(currentProject.description || '')
+        setIsTyping(false)
+      }
     }
   }, [expandedProject, projects])
 
@@ -1022,7 +1017,7 @@ Curious, creative, kind, and ready to ship... Enjoy — much love, Lisle`
 
       {/* Scrollable Media Section */}
       {expandedProject && (
-        <div>
+        <div key={expandedProject}>
           {projects?.find(p => p._id === expandedProject)?.media?.map((media, imgNum) => {
             
             // BACKGROUND COLOR TRIGGER

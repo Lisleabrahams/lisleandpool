@@ -37,7 +37,7 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId, isClearing }
 
   const gravity = -0.008
   const damping = 0.98
-  const bounceDamping = 0.5
+  const bounceDamping = 0.3
   const angularDamping = 0.96
   const duckRadius = 0.4
   const maxAngularVel = 0.15
@@ -109,8 +109,21 @@ function Duck({ id, modelUrl, allDucksRef, onDragStart, draggingId, isClearing }
         p.position[1] = bounds.bottom
         p.velocity[1] = Math.abs(p.velocity[1]) * bounceDamping
         if (Math.abs(p.angularVel[0]) < maxAngularVel * 0.5) p.angularVel[0] += p.velocity[0] * 0.2
-        // Stop tiny bounces
-        if (Math.abs(p.velocity[1]) < 0.01) p.velocity[1] = 0
+        
+        // Stop tiny bounces and vibration
+        if (Math.abs(p.velocity[1]) < 0.02) {
+          p.velocity[1] = 0
+          p.velocity[0] *= 0.8  // Slow horizontal movement too
+        }
+        
+        // If duck is nearly stationary, kill all micro-movements
+        const totalVelocity = Math.abs(p.velocity[0]) + Math.abs(p.velocity[1])
+        if (totalVelocity < 0.01 && p.position[1] <= bounds.bottom + 0.1) {
+          p.velocity[0] = 0
+          p.velocity[1] = 0
+          p.angularVel[0] *= 0.5
+          p.angularVel[2] *= 0.5
+        }
       }
       if (p.position[1] > bounds.top) {
         p.position[1] = bounds.top
