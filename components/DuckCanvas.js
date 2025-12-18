@@ -377,28 +377,6 @@ export default function DuckCanvas({ ducks, onClose, modelUrl }) {
           />
         ))}
       </Canvas>
-
-      {/* Clear button */}
-      {ducks.length > 0 && !isClearing && (
-        <button
-          onClick={handleClear}
-          style={{
-            position: 'absolute',
-            bottom: '20px',
-            right: '20px',
-            padding: '10px 20px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontFamily: '"Geist Mono", monospace',
-            fontSize: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}
-        >
-          Clear Ducks
-        </button>
-      )}
     </div>
   )
 }
